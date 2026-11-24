@@ -43,6 +43,7 @@ function setup(host,hero){
  }
  const camFrom=new THREE.Vector3(12,12,15),lookFrom=new THREE.Vector3(),look=new THREE.Vector3();
  let selection='overview',started=performance.now(),frame=0,visible=false,finished=false;
+ camera.position.set(12,12,15);
  function select(room){if(!rooms[room])return;camFrom.copy(camera.position);lookFrom.copy(look);selection=room;started=performance.now();finished=false;draw()}
  if(!hero){document.querySelectorAll('[data-room]').forEach(b=>b.addEventListener('click',()=>select(b.dataset.room)))}
  function draw(now=performance.now()){
