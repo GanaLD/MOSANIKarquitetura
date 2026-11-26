@@ -29,7 +29,7 @@ A seleção de um cômodo move a câmera por 1,7 s com interpolação suave. O m
 
 - A demo usa geometria 3D procedural construída no navegador. Os móveis e materiais são representações simplificadas.
 - O SVG original permanece como fallback quando WebGL ou a biblioteca 3D não carrega.
-- Substituir o símbolo ilustrativo pelo arquivo vetorial oficial da MOSARQ na revelação da marca. Não redesenhar o símbolo.
+- Identidade oficial aplicada na atualização local: vetores horizontais, favicon, padrão azulejo, Archivo e Source Serif 4. Consulte DESIGN.md e ASSETS.md.
 - A próxima etapa de produção é exportar uma residência autoral em GLB a partir do Blender, com peças nomeadas por cômodo e etapas estruturais. Validar a planta com o arquiteto antes disso.
 - Fotografias, texturas PBR, gravação cinematográfica e áudio dependem de assets aprovados. O modelo atual não representa um projeto executivo.
 
@@ -46,7 +46,7 @@ A seleção de um cômodo move a câmera por 1,7 s com interpolação suave. O m
 - Conferir visualmente nos viewports 1920, 1440, 1366, 1280, 1024, 768, 430 e 390 px e ajustar colisões encontradas.
 - Medir LCP, CLS, tamanho de transferência e FPS nos dispositivos de destino.
 - Conferir o carregamento da biblioteca 3D externa e o comportamento WebGL em aparelhos reais.
-- Aplicar o arquivo vetorial oficial da marca e os códigos da paleta aprovados.
+- Publicar a atualização da identidade após autorização explícita para os materiais selecionados.
 - Validar circulação, mobiliário e estrutura com o arquiteto.
 - Habilitar GitHub Pages para uma URL permanente. O preview da demo é temporário.
 

@@ -1,7 +1,8 @@
 import * as THREE from 'https://esm.sh/three@0.181.2';
 const reduced=matchMedia('(prefers-reduced-motion: reduce)');
 const rooms={living:{title:'Sala de estar',focus:[-2.9,.9,1.1],camera:[-.4,3.5,6.8]},kitchen:{title:'Cozinha e jantar',focus:[-3,.8,-2.5],camera:[-.1,4.1,.2]},bedroom:{title:'Suíte',focus:[3.5,.7,1],camera:[5.7,3.2,5.8]},bath:{title:'Banheiro',focus:[4.5,.7,-2.8],camera:[3.8,4.5,.8]},garden:{title:'Jardim',focus:[0,0,4.9],camera:[8,5,12]}};
-const shared={};
+const brand=getComputedStyle(document.documentElement);
+const token=name=>brand.getPropertyValue(name).trim();
 function setup(host,hero){
  const scene=new THREE.Scene();scene.background=new THREE.Color(hero?'#d1bea6':'#dcd9ce');
  const camera=new THREE.PerspectiveCamera(38,1,.1,100);
@@ -11,7 +12,7 @@ function setup(host,hero){
  scene.add(new THREE.HemisphereLight(0xfff8ea,0x767868,2.3));
  const sun=new THREE.DirectionalLight(0xffe9cd,2.5);sun.position.set(-7,12,9);sun.castShadow=true;sun.shadow.mapSize.set(1024,1024);Object.assign(sun.shadow.camera,{left:-16,right:16,top:16,bottom:-16});scene.add(sun);
  const mat=(color,roughness=.85)=>new THREE.MeshStandardMaterial({color,roughness});
- const m={paper:mat('#ede7da'),stone:mat('#bdb09b'),moss:mat('#747865'),clay:mat('#a84e36'),wood:mat('#9d7453'),glass:new THREE.MeshPhysicalMaterial({color:'#91b0a7',transparent:true,opacity:.48,roughness:.15,metalness:.1,side:THREE.DoubleSide}),dark:mat('#45483c'),ground:mat('#919774')};
+ const m={paper:mat(token('--paper')),stone:mat('#bdb09b'),moss:mat(token('--moss')),clay:mat(token('--clay')),wood:mat('#9d7453'),glass:new THREE.MeshPhysicalMaterial({color:'#91b0a7',transparent:true,opacity:.48,roughness:.15,metalness:.1,side:THREE.DoubleSide}),dark:mat('#45483c'),ground:mat('#919774')};
  const elements=[];let index=0;
  function box(group,name,x,z,w,d,h,material,y=0){
   const mesh=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),m[material]);mesh.position.set(x,y+h/2,z);mesh.castShadow=true;mesh.receiveShadow=true;mesh.name=name;mesh.userData={group,order:index++,fullY:mesh.position.y,fullHeight:h};scene.add(mesh);elements.push(mesh);return mesh
@@ -37,14 +38,14 @@ function setup(host,hero){
   const pencil=box('desk','Lapiseira',8,1,.08,4,.09,'dark',-.43);pencil.rotation.y=.28;
   const lineMaterial=new THREE.LineBasicMaterial({color:0x606e5d});
   for(const obj of elements.filter(o=>o.userData.group==='walls')){
-   const edge=new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.BoxGeometry(obj.scale.x||obj.geometry.parameters.width,.01,obj.geometry.parameters.depth)),lineMaterial);
+   const edge=new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.BoxGeometry(obj.geometry.parameters.width,.01,obj.geometry.parameters.depth)),lineMaterial);
    edge.position.set(obj.position.x,-.44,obj.position.z);scene.add(edge)
   }
  }
  const camFrom=new THREE.Vector3(12,12,15),lookFrom=new THREE.Vector3(),look=new THREE.Vector3();
- let selection='overview',started=performance.now(),frame=0,visible=false,finished=false;
+ let selection=hero?'overview':'living',started=performance.now(),frame=0,visible=false,finished=false;
  camera.position.set(12,12,15);
- function select(room){if(!rooms[room])return;camFrom.copy(camera.position);lookFrom.copy(look);selection=room;started=performance.now();finished=false;draw()}
+ function select(room){if(!rooms[room])return;cancelAnimationFrame(frame);camFrom.copy(camera.position);lookFrom.copy(look);selection=room;started=performance.now();finished=false;draw()}
  if(!hero){document.querySelectorAll('[data-room]').forEach(b=>b.addEventListener('click',()=>select(b.dataset.room)))}
  function draw(now=performance.now()){
   if(!visible)return;frame=0;
@@ -76,7 +77,71 @@ function setup(host,hero){
  const intersection=new IntersectionObserver(([entry])=>{visible=entry.isIntersecting;if(visible)schedule();else cancelAnimationFrame(frame)});intersection.observe(host);
  renderer.domElement.addEventListener('webglcontextlost',()=>{visible=false;size.disconnect();intersection.disconnect();renderer.dispose();renderer.domElement.remove();host.classList.remove('ready')},{once:true})
 }
+
+/* ---------- Tour 3D com modelo GLB (estudo conceitual) ---------- */
+const GLB_URL=new URL('./models/mosarq-casa.glb',import.meta.url).href;
+const CAM_BY_ROOM={living:'cam_sala',kitchen:'cam_cozinha_jantar',bedroom:'cam_suite',bath:'cam_banheiro',garden:'cam_jardim'};
+async function tourGLB(host){
+ const base='https://esm.sh/three@0.181.2/examples/jsm/';
+ const [{GLTFLoader},{RoomEnvironment}]=await Promise.all([import(base+'loaders/GLTFLoader.js'),import(base+'environments/RoomEnvironment.js')]);
+ const renderer=new THREE.WebGLRenderer({antialias:true,powerPreference:'low-power'});
+ renderer.setPixelRatio(Math.min(devicePixelRatio,1.5));renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.NeutralToneMapping;renderer.toneMappingExposure=.82;renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;
+ const scene=new THREE.Scene();scene.background=new THREE.Color('#dfe4de');
+ const pmrem=new THREE.PMREMGenerator(renderer);const envTex=pmrem.fromScene(new RoomEnvironment(),.04).texture;scene.environment=envTex;scene.environmentIntensity=.6;
+ scene.add(new THREE.HemisphereLight(0xfff8ea,0x8a8474,.7));
+ const sun=new THREE.DirectionalLight(0xffe9cd,1.9);sun.position.set(-8,14,10);sun.castShadow=true;sun.shadow.mapSize.set(2048,2048);sun.shadow.bias=-.0004;sun.shadow.normalBias=.03;
+ Object.assign(sun.shadow.camera,{left:-16,right:16,top:16,bottom:-16,near:1,far:50});scene.add(sun);
+ const gltf=await new GLTFLoader().loadAsync(GLB_URL);
+ scene.add(gltf.scene);
+ const cams={};gltf.scene.traverse(o=>{
+  if(o.isCamera)cams[o.name]=o;
+  if(o.isMesh){const t=o.material&&o.material.transparent;o.castShadow=!t;o.receiveShadow=true;if(t)o.renderOrder=2}
+ });
+ gltf.scene.updateMatrixWorld(true);
+ const camera=new THREE.PerspectiveCamera(60,1,.05,200);
+ const pose=name=>{const c=cams[name];const p=new THREE.Vector3(),q=new THREE.Quaternion();c.getWorldPosition(p);c.getWorldQuaternion(q);return {p,q,fov:c.fov}};
+ let from=pose('cam_sala'),to=from,started=0,anim=false,visible=false,frame=0,yaw=0,pitch=0,dragging=false,lastX=0,lastY=0;
+ camera.position.copy(from.p);camera.quaternion.copy(from.q);camera.fov=from.fov;
+ const cur={p:from.p.clone(),q:from.q.clone(),fov:from.fov};
+ const look=new THREE.Quaternion(),eY=new THREE.Euler(0,0,0,'YXZ');
+ function select(room){
+  const name=CAM_BY_ROOM[room];if(!name||!cams[name])return;
+  from={p:cur.p.clone(),q:cur.q.clone(),fov:cur.fov};to=pose(name);yaw=0;pitch=0;
+  started=performance.now();anim=!reduced.matches;if(!anim){cur.p.copy(to.p);cur.q.copy(to.q);cur.fov=to.fov}
+  request()
+ }
+ function request(){if(visible&&!frame)frame=requestAnimationFrame(tick)}
+ function tick(now){
+  frame=0;if(!visible)return;
+  const w=host.clientWidth,h=host.clientHeight;if(!w||!h)return;
+  renderer.setSize(w,h,false);camera.aspect=w/h;
+  if(anim){
+   const t=Math.min(1,(now-started)/1500),e=t*t*(3-2*t);
+   cur.p.lerpVectors(from.p,to.p,e);cur.q.slerpQuaternions(from.q,to.q,e);cur.fov=THREE.MathUtils.lerp(from.fov,to.fov,e);
+   if(t>=1)anim=false
+  }
+  camera.position.copy(cur.p);camera.fov=cur.fov;
+  eY.set(pitch,yaw,0);look.setFromEuler(eY);camera.quaternion.copy(cur.q).multiply(look);
+  camera.updateProjectionMatrix();renderer.render(scene,camera);
+  if(anim||dragging)request()
+ }
+ const el=renderer.domElement;el.style.touchAction='pan-y';el.style.cursor='grab';
+ el.setAttribute('role','img');el.setAttribute('aria-label','Residência em 3D, estudo conceitual. Use os botões para trocar de ambiente; arraste para olhar ao redor.');
+ el.addEventListener('pointerdown',e=>{dragging=true;lastX=e.clientX;lastY=e.clientY;el.setPointerCapture(e.pointerId);el.style.cursor='grabbing'});
+ el.addEventListener('pointermove',e=>{if(!dragging)return;yaw=THREE.MathUtils.clamp(yaw+(e.clientX-lastX)*-.004,-.7,.7);pitch=THREE.MathUtils.clamp(pitch+(e.clientY-lastY)*-.003,-.35,.35);lastX=e.clientX;lastY=e.clientY;request()});
+ const end=()=>{dragging=false;el.style.cursor='grab'};el.addEventListener('pointerup',end);el.addEventListener('pointercancel',end);
+ document.querySelectorAll('[data-room]').forEach(b=>b.addEventListener('click',()=>select(b.dataset.room)));
+ host.prepend(el);host.classList.add('ready');
+ const size=new ResizeObserver(request);size.observe(host);
+ const io=new IntersectionObserver(([en])=>{visible=en.isIntersecting;if(visible)request();else{cancelAnimationFrame(frame);frame=0}});io.observe(host);
+ const dispose=()=>{visible=false;cancelAnimationFrame(frame);size.disconnect();io.disconnect();scene.traverse(o=>{if(o.isMesh){o.geometry.dispose();(Array.isArray(o.material)?o.material:[o.material]).forEach(m=>{for(const k in m){if(m[k]&&m[k].isTexture)m[k].dispose()}m.dispose()})}});envTex.dispose();pmrem.dispose();renderer.dispose()};
+ el.addEventListener('webglcontextlost',()=>{dispose();el.remove();host.classList.remove('ready');try{setup(host,false)}catch(err){console.warn('WebGL indisponível',err)}},{once:true});
+ addEventListener('pagehide',dispose,{once:true});
+ visible=true;request();return true
+}
+
 for(const [selector,hero] of [['.draft',true],['.scene',false]]){
  const host=document.querySelector(selector);if(!host)continue;
- const observer=new IntersectionObserver(([entry])=>{if(entry.isIntersecting){observer.disconnect();try{setup(host,hero)}catch(error){console.warn('WebGL indisponível',error)}}},{rootMargin:'200px'});observer.observe(host)
+ const observer=new IntersectionObserver(([entry])=>{if(entry.isIntersecting){observer.disconnect();const fallback=()=>{try{setup(host,hero)}catch(error){console.warn('WebGL indisponível',error)}};
+   if(hero)fallback();else tourGLB(host).catch(error=>{console.warn('Modelo GLB indisponível; usando cena procedural',error);host.classList.remove('ready');host.querySelector('canvas')?.remove();fallback()})}},{rootMargin:'200px'});observer.observe(host)
 }
