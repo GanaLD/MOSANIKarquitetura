@@ -50,3 +50,30 @@
     });
   }
 })();
+
+/* Menu mobile em tela cheia */
+(function(){
+  'use strict';
+  var btn=document.querySelector('.menu-toggle'),nav=document.getElementById('site-nav'),root=document.documentElement;
+  if(!btn||!nav)return;
+  var label=btn.querySelector('.menu-label');
+  function set(open){
+    root.classList.toggle('menu-open',open);
+    btn.setAttribute('aria-expanded',open?'true':'false');
+    if(label)label.textContent=open?'Fechar':'Menu';
+    if(open){var f=nav.querySelector('a');if(f)setTimeout(function(){f.focus({preventScroll:true})},350)}
+  }
+  btn.addEventListener('click',function(){set(btn.getAttribute('aria-expanded')!=='true')});
+  nav.addEventListener('click',function(e){if(e.target.closest('a'))set(false)});
+  document.addEventListener('keydown',function(e){
+    if(!root.classList.contains('menu-open'))return;
+    if(e.key==='Escape'){set(false);btn.focus();return}
+    if(e.key==='Tab'){
+      var items=[btn].concat([].slice.call(nav.querySelectorAll('a')));
+      var i=items.indexOf(document.activeElement);
+      if(e.shiftKey&&i<=0){e.preventDefault();items[items.length-1].focus()}
+      else if(!e.shiftKey&&i===items.length-1){e.preventDefault();items[0].focus()}
+    }
+  });
+  matchMedia('(min-width:701px)').addEventListener('change',function(m){if(m.matches)set(false)});
+})();
