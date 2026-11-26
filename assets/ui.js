@@ -85,9 +85,11 @@
   var reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
   if(v&&b){
     var set=function(paused){b.setAttribute('aria-pressed',paused?'true':'false');b.setAttribute('aria-label',paused?'Reproduzir vídeo de fundo':'Pausar vídeo de fundo')};
-    if(reduce){v.removeAttribute('autoplay');v.pause();set(true)}
+    if(reduce){v.removeAttribute('autoplay');v.pause();set(true);b.hidden=false}
     b.addEventListener('click',function(){if(v.paused){v.play().catch(function(){});set(false)}else{v.pause();set(true)}});
     v.addEventListener('playing',function(){b.hidden=false});
+    v.addEventListener('ended',function(){set(true)});
+    if(reduce){v.addEventListener('loadedmetadata',function(){try{v.currentTime=Math.max(0,v.duration-.05)}catch(e){}})}
   }
   document.addEventListener('click',function(e){
     var a=e.target.closest('a[href^="#"]');if(!a)return;

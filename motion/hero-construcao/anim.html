@@ -1,0 +1,133 @@
+<!doctype html><meta charset=utf8>
+<script type=importmap>{"imports":{"three":"/node_modules/three/build/three.module.js"}}</script>
+<body style="margin:0;background:#000"><canvas id=c></canvas>
+<script type=module>
+import * as THREE from 'three';
+import {GLTFLoader} from '/node_modules/three/examples/jsm/loaders/GLTFLoader.js';
+import {RoomEnvironment} from '/node_modules/three/examples/jsm/environments/RoomEnvironment.js';
+
+const q=new URLSearchParams(location.search);
+const W=+(q.get('w')||1920),H=+(q.get('h')||1080);
+const DUR=+(q.get('dur')||12);
+const r=new THREE.WebGLRenderer({canvas:c,antialias:true,preserveDrawingBuffer:true});
+r.setSize(W,H,false);r.setPixelRatio(1);
+r.toneMapping=THREE.NeutralToneMapping;r.toneMappingExposure=.9;
+r.shadowMap.enabled=true;r.shadowMap.type=THREE.PCFSoftShadowMap;r.localClippingEnabled=true;
+
+const s=new THREE.Scene();
+const pm=new THREE.PMREMGenerator(r);s.environment=pm.fromScene(new RoomEnvironment(),.04).texture;s.environmentIntensity=.5;
+const hemi=new THREE.HemisphereLight('#f3ead8','#5b5246',.5);s.add(hemi);
+const sun=new THREE.DirectionalLight('#ffe2bf',2.4);sun.position.set(38,30,36);sun.target.position.set(8,3,-14);s.add(sun.target);
+sun.castShadow=true;sun.shadow.mapSize.set(4096,4096);Object.assign(sun.shadow.camera,{left:-45,right:45,top:45,bottom:-45,near:1,far:160});sun.shadow.bias=-.0004;s.add(sun);
+
+/* ---------- paleta ---------- */
+const C={blue:new THREE.Color('#1d4f91'),blueDeep:new THREE.Color('#163f78'),sky:new THREE.Color('#d8d1c3'),ground:new THREE.Color('#a7a58a'),lawn:new THREE.Color('#7a8a5c'),concrete:new THREE.Color('#9a9792'),line:new THREE.Color('#f4f7fb')};
+
+/* ---------- papel azul (blueprint) com grade ---------- */
+function gridTex(){const cv=document.createElement('canvas');cv.width=cv.height=1024;const g=cv.getContext('2d');
+ g.clearRect(0,0,1024,1024);g.strokeStyle='rgba(255,255,255,.22)';g.lineWidth=2;
+ for(let i=0;i<=1024;i+=64){g.beginPath();g.moveTo(i,0);g.lineTo(i,1024);g.stroke();g.beginPath();g.moveTo(0,i);g.lineTo(1024,i);g.stroke()}
+ g.strokeStyle='rgba(255,255,255,.08)';g.lineWidth=1;for(let i=0;i<=1024;i+=16){g.beginPath();g.moveTo(i,0);g.lineTo(i,1024);g.stroke();g.beginPath();g.moveTo(0,i);g.lineTo(1024,i);g.stroke()}
+ const t=new THREE.CanvasTexture(cv);t.wrapS=t.wrapT=THREE.RepeatWrapping;t.repeat.set(14,14);t.anisotropy=8;t.colorSpace=THREE.SRGBColorSpace;return t}
+const groundMat=new THREE.MeshStandardMaterial({color:C.blue.clone(),map:gridTex(),roughness:1});
+const ground=new THREE.Mesh(new THREE.PlaneGeometry(2000,2000),groundMat);ground.rotation.x=-Math.PI/2;ground.position.set(8,-.08,-15);ground.receiveShadow=true;s.add(ground);
+/* gramado que surge */
+const lawnAlpha=(()=>{const c=document.createElement('canvas');c.width=c.height=256;const x=c.getContext('2d');const g=x.createRadialGradient(128,128,40,128,128,128);g.addColorStop(0,'#fff');g.addColorStop(.75,'#fff');g.addColorStop(1,'#000');x.fillStyle=g;x.fillRect(0,0,256,256);return new THREE.CanvasTexture(c)})();
+const lawnMat=new THREE.MeshStandardMaterial({color:C.lawn,roughness:1,transparent:true,opacity:0,alphaMap:lawnAlpha,depthWrite:false});
+const lawn=new THREE.Mesh(new THREE.CircleGeometry(1,96),lawnMat);lawn.rotation.x=-Math.PI/2;lawn.position.set(8,-.05,-12);lawn.receiveShadow=true;s.add(lawn);
+
+/* ---------- modelo ---------- */
+const gltf=await new GLTFLoader().loadAsync('../../assets/models/mosarq-casa-real.glb');
+const house=gltf.scene;s.add(house);
+const TOP=12.3;
+const clipSolid=new THREE.Plane(new THREE.Vector3(0,-1,0),0);   // mostra y < constante
+const clipLine=new THREE.Plane(new THREE.Vector3(0,-1,0),0);
+const clipReal=new THREE.Plane(new THREE.Vector3(0,-1,0),-1);
+const clipAbove=new THREE.Plane(new THREE.Vector3(0,1,0),1);
+const solids=[],reals=[],lineMats=[];
+const concreteMat=new THREE.MeshStandardMaterial({color:C.concrete,roughness:.9,clippingPlanes:[clipSolid,clipAbove],side:THREE.DoubleSide});
+house.updateMatrixWorld(true);
+const meshes=[];house.traverse(o=>{if(o.isMesh)meshes.push(o)});
+for(const m of meshes){
+ m.castShadow=true;m.receiveShadow=true;
+ const mats=Array.isArray(m.material)?m.material:[m.material];
+ const real=mats.map(x=>{const y=x.clone();y.clippingPlanes=[clipSolid,clipReal];if(y.name==='_Concrete'){y.map=null;y.color.set('#ece6db');y.roughness=.92;y.metalness=0}if(y.name==='_Metal'){y.color.set('#34363a');y.roughness=.55}if(y.name==='_Wood'){y.color.setRGB(1.25,1.1,.95)}return y});
+ m.material=Array.isArray(m.material)?real:real[0];reals.push(...real);
+ const conc=new THREE.Mesh(m.geometry,concreteMat);conc.castShadow=true;conc.receiveShadow=true;m.add(conc);solids.push(conc);
+ const eg=new THREE.EdgesGeometry(m.geometry,28);
+ const lm=new THREE.LineBasicMaterial({color:C.line,transparent:true,opacity:1,clippingPlanes:[clipLine],depthWrite:false});
+ lineMats.push(lm);const ln=new THREE.LineSegments(eg,lm);ln.renderOrder=5;m.add(ln);
+}
+
+if(new URLSearchParams(location.search).get('mat')){const pal={_GlassReal:'#00ffff',_Concrete:'#ff0000',wire_000000000:'#00ff00',_StoneTile2:'#0000ff',_Metal:'#ffff00',_StoneTile3:'#ff00ff',_Wood:'#ff8800',_Black:'#000000',_Roof:'#8800ff',_StoneTile1:'#ffffff',_Grass:'#008800',Emission:'#888888'};for(const r of reals){r.map=null;r.color.set(pal[r.name]||'#555');r.emissive?.set(pal[r.name]||'#555');r.emissiveIntensity=.6}}
+/* ---------- paisagismo estilo maquete ---------- */
+const plants=[];
+const leafA=new THREE.MeshStandardMaterial({color:'#6f7d5c',roughness:.95});
+const leafB=new THREE.MeshStandardMaterial({color:'#8f9877',roughness:.95});
+const leafC=new THREE.MeshStandardMaterial({color:'#5b6a4c',roughness:.95});
+const grassM=new THREE.MeshStandardMaterial({color:'#b3ab86',roughness:1,flatShading:true});
+const trunk=new THREE.MeshStandardMaterial({color:'#6e5a48',roughness:1});
+function tree(x,z,h,start,mat){const g=new THREE.Group();const t=new THREE.Mesh(new THREE.CylinderGeometry(.08,.14,h*.62,8),trunk);t.position.y=h*.31;g.add(t);
+ for(let i=0;i<7;i++){const r=h*(.1+R()*.07);const c=new THREE.Mesh(new THREE.SphereGeometry(r,18,12),mat);c.position.set((R()-.5)*h*.32,h*(.62+R()*.28),(R()-.5)*h*.32);c.scale.y=.8;g.add(c)}
+ g.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true}});g.position.set(x,0,z);g.scale.setScalar(.001);s.add(g);plants.push({g,start});}
+function palm(x,z,h,start){const g=new THREE.Group();const t=new THREE.Mesh(new THREE.CylinderGeometry(.1,.16,h,8),trunk);t.position.y=h/2;g.add(t);
+ for(let i=0;i<7;i++){const f=new THREE.Mesh(new THREE.ConeGeometry(.35,h*.55,4),leafA);const a=i/7*Math.PI*2;f.position.set(Math.cos(a)*h*.18,h*.95,Math.sin(a)*h*.18);f.rotation.set(Math.sin(a)*1.1,0,-Math.cos(a)*1.1);g.add(f)}
+ g.traverse(o=>{if(o.isMesh){o.castShadow=true}});g.position.set(x,0,z);g.scale.setScalar(.001);s.add(g);plants.push({g,start});}
+function shrub(x,z,sz,start,mat){const m=new THREE.Mesh(new THREE.SphereGeometry(sz,20,14),mat);m.scale.set(1.3,.7,1);m.position.set(x,sz*.45,z);m.castShadow=true;m.receiveShadow=true;const g=new THREE.Group();g.add(m);g.position.y=0;g.scale.setScalar(.001);s.add(g);plants.push({g,start})}
+let rnd=7;const R=()=>(rnd=(rnd*16807)%2147483647)/2147483647;
+tree(-7,6,10,0,leafA);tree(-4,14,8,.08,leafC);tree(35,-3,9,.12,leafB);tree(27,-8,10.5,.18,leafA);tree(-9,-14,9,.22,leafC);tree(25,-24,8,.26,leafB);tree(-12,-2,7,.3,leafB);
+function grass(x,z,st){const g=new THREE.Group();for(let i=0;i<9;i++){const b=new THREE.Mesh(new THREE.ConeGeometry(.06,.9+R()*.6,4),grassM);b.position.set((R()-.5)*.6,.5,(R()-.5)*.6);b.rotation.set((R()-.5)*.6,0,(R()-.5)*.6);g.add(b)}g.position.set(x,0,z);g.scale.setScalar(.001);s.add(g);plants.push({g,start:st})}
+function agave(x,z,st){const g=new THREE.Group();for(let i=0;i<10;i++){const a=i/10*Math.PI*2;const b=new THREE.Mesh(new THREE.ConeGeometry(.16,1.2,3),leafB);b.position.set(Math.cos(a)*.25,.45,Math.sin(a)*.25);b.rotation.set(Math.sin(a)*.9,0,-Math.cos(a)*.9);g.add(b)}g.position.set(x,0,z);g.scale.setScalar(.001);s.add(g);plants.push({g,start:st})}
+for(let i=0;i<22;i++)grass(18+R()*10,6+R()*10,.2+R()*.5);for(let i=0;i<14;i++)grass(-6+R()*6,2+R()*10,.2+R()*.5);for(let i=0;i<8;i++)agave(4+R()*14,4.5+R()*5,.25+R()*.4);
+function column(x,z,h,start){const g=new THREE.Group();const c=new THREE.Mesh(new THREE.CapsuleGeometry(h*.11,h*.6,6,16),leafC);c.position.y=h*.52;g.add(c);g.traverse(o=>{if(o.isMesh){o.castShadow=true}});g.position.set(x,0,z);g.scale.setScalar(.001);s.add(g);plants.push({g,start})}
+column(19.5,-13,9,.12);column(20,-21,8,.18);column(-3,-11,9,.14);column(-3.4,-19,8,.2);
+for(let i=0;i<34;i++){const a=R()*Math.PI*2,rad=19+R()*8;if(Math.sin(a)>.35)continue;shrub(8+Math.cos(a)*rad,-12+Math.sin(a)*rad*.9,.6+R()*.9,.05+R()*.5,[leafA,leafB,leafC][i%3])}
+for(let i=0;i<16;i++){shrub(1+i*.95,2.1,.38+R()*.2,.3+i*.015,i%2?leafB:leafA)}
+
+/* ---------- câmera ---------- */
+const cam=new THREE.PerspectiveCamera(32,W/H,.1,600);
+const P0=new THREE.Vector3(30,46,38),T0=new THREE.Vector3(3,0,-13);   // vista do desenho (alta)
+const P1=new THREE.Vector3(28,26,34),T1=new THREE.Vector3(3,3,-12);
+const P2=new THREE.Vector3(29,6.5,31),T2=new THREE.Vector3(1.5,6,-8); // altura da rua, 3/4 frente
+const ease=x=>x<.5?4*x*x*x:1-Math.pow(-2*x+2,3)/2;
+const smooth=(a,b,x)=>{const t=Math.min(1,Math.max(0,(x-a)/(b-a)));return t*t*(3-2*t)};
+const lerp=THREE.MathUtils.lerp;
+
+const fogC=new THREE.Color();
+window.renderAt=(t)=>{ // t em segundos
+ const u=t/DUR;
+ // 0-2.6 traço desenha | 2.4-6.4 estrutura sobe | 5.2-9 câmera desce + papel vira terreno | 7.2-9.6 materiais reais | 8.4-11 paisagismo
+ const draw=smooth(.2,2.6,t);
+ clipLine.constant=lerp(-.1,TOP+.2,draw);
+ const build=smooth(2.4,6.4,t);
+ clipSolid.constant=lerp(-.1,TOP+.2,build);
+ const mat=smooth(6.6,9.4,t);
+ const h2=lerp(-.2,TOP+.3,mat);clipReal.constant=h2;clipAbove.constant=-h2;
+ const lineFade=1-smooth(6.6,8.6,t);
+ for(const lm of lineMats){lm.opacity=lineFade;lm.visible=lineFade>.002}
+ // terreno
+ const land=smooth(5.4,8.6,t);
+ groundMat.color.copy(C.blue).lerp(C.ground,land);
+ // mistura da grade: alternar intensidade via opacidade de um plano de grade separado
+ gridPlane.material.opacity=(1-land)*.9;
+ lawnMat.opacity=smooth(8,9.6,t);const ls=lerp(2,70,smooth(8,10.6,t));lawn.scale.set(ls,ls*.9,1);
+ // céu
+ const sky=smooth(5.8,9,t);const mid=new THREE.Color('#c7d2dc');s.background=(sky<.5?fogC.copy(C.blueDeep).lerp(mid,sky*2):fogC.copy(mid).lerp(C.sky,(sky-.5)*2)).clone();
+ s.fog=new THREE.Fog(s.background,lerp(400,70,sky),lerp(600,170,sky));
+ sun.intensity=lerp(1.2,2.6,sky);hemi.intensity=lerp(.9,.55,sky);
+ // plantas
+ for(const p of plants){const k=smooth(8.4+p.start*3.2,9.6+p.start*3.2,t);const e=k<1?1-Math.pow(1-k,3):1;p.g.scale.setScalar(Math.max(.001,e))}
+ // câmera
+ const c1=ease(smooth(0,5.4,t)),c2=ease(smooth(5.0,10.2,t));
+ const P=new THREE.Vector3().lerpVectors(P0,P1,c1).lerp(P2,c2);
+ const T=new THREE.Vector3().lerpVectors(T0,T1,c1).lerp(T2,c2);
+ const push=smooth(10.2,DUR,t);P.lerp(T,push*.05);
+ cam.position.copy(P);cam.lookAt(T);cam.fov=lerp(32,34,c2);cam.updateProjectionMatrix();
+ r.render(s,cam);
+};
+/* grade em plano separado (fica só no papel) */
+const gridPlane=new THREE.Mesh(new THREE.PlaneGeometry(260,260),new THREE.MeshBasicMaterial({map:gridTex(),transparent:true,opacity:.9,depthWrite:false,}));
+gridPlane.rotation.x=-Math.PI/2;gridPlane.position.set(8,-.07,-15);s.add(gridPlane);
+groundMat.map=null;groundMat.needsUpdate=true;
+window.ready=true;
+</script>
