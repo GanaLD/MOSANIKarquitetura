@@ -206,3 +206,8 @@
   .hero-foot{margin-top:22px;justify-content:space-between}
 }
 @media (prefers-reduced-motion:reduce){.hero-video,.hero-v .hero-copy>*{animation:none}}
+
+/* Fundo provisório do hero (sem vídeo): papel técnico da marca */
+.hero-media{background:var(--deep) linear-gradient(rgba(245,245,243,.05) 1px,transparent 1px) 0 0/48px 48px,var(--deep) linear-gradient(90deg,rgba(245,245,243,.05) 1px,transparent 1px) 0 0/48px 48px;background-color:var(--deep)}
+.hero-video:not([src]):not(:has(source)){display:none}
+.hero-pause[hidden],.hero-ref[hidden]{display:none}
