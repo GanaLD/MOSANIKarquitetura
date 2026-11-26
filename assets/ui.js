@@ -77,3 +77,30 @@
   });
   matchMedia('(min-width:701px)').addEventListener('change',function(m){if(m.matches)set(false)});
 })();
+
+/* Hero: vídeo de fundo (pausa acessível, movimento reduzido) e rolagem suave dos links internos */
+(function(){
+  'use strict';
+  var v=document.querySelector('.hero-video'),b=document.querySelector('.hero-pause');
+  var reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if(v&&b){
+    var set=function(paused){b.setAttribute('aria-pressed',paused?'true':'false');b.setAttribute('aria-label',paused?'Reproduzir vídeo de fundo':'Pausar vídeo de fundo')};
+    if(reduce){v.removeAttribute('autoplay');v.pause();set(true)}
+    b.addEventListener('click',function(){if(v.paused){v.play().catch(function(){});set(false)}else{v.pause();set(true)}});
+    v.addEventListener('playing',function(){b.hidden=false});
+  }
+  document.addEventListener('click',function(e){
+    var a=e.target.closest('a[href^="#"]');if(!a)return;
+    var id=a.getAttribute('href');if(id.length<2)return;
+    var t=document.querySelector(id);if(!t)return;
+    e.preventDefault();
+    var off=parseInt(getComputedStyle(document.documentElement).scrollPaddingTop)||0;
+    scrollTo({top:t.getBoundingClientRect().top+scrollY-off,behavior:reduce?'auto':'smooth'});
+    history.replaceState(null,'',id);
+  });
+  /* Recalcula posições do ScrollTrigger quando o layout muda depois do load */
+  var refresh=function(){if(window.ScrollTrigger)window.ScrollTrigger.refresh()};
+  if(document.fonts&&document.fonts.ready)document.fonts.ready.then(refresh);
+  addEventListener('mq:dock',refresh);
+  addEventListener('load',function(){setTimeout(refresh,600)});
+})();

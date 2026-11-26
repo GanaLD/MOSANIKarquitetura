@@ -15,7 +15,7 @@
         x: function () { return -dist(); }, ease: 'none',
         scrollTrigger: {
           trigger: '.horizontal', start: 'top 100px', end: function () { return '+=' + dist(); },
-          pin: true, scrub: 0.8, anticipatePin: 1, invalidateOnRefresh: true,
+          pin: true, scrub: 0.8, invalidateOnRefresh: true,
           onUpdate: function (self) { if (bar) gsap.set(bar, { scaleX: 1 / 3 + self.progress * (2 / 3) }); }
         }
       });
