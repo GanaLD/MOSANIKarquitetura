@@ -22,3 +22,7 @@ Código preparado a partir de GanaLD/MOSANIKarquitetura, main b45c4ddef2c7f0f900
 Fotos de **projetos de terceiros**, usadas apenas como direção criativa nesta demonstração (ver `00 - GUIA DO ACERVO.txt`: não atribuir a MOSARQ a autoria; verificar direitos antes de publicar).
 Créditos: ref-1/2/3 Casa Pirenópolis — Leo Romano; ref-4 Residência MAA — Jacobsen Arquitetura; ref-5 Casa Lima — Pietro Terlizzi.
 **Substituir pelo portfólio MOSARQ antes da publicação oficial.** Imagem ref-6/ref-7 foram convertidas mas não usadas.
+
+## Modelo 3D — `assets/models/mosarq-casa-real.glb`
+Origem: “Modern House” de **Abbos Mirzaev** (BlenderKit, licença indicada: Royalty Free — verificar limites de redistribuição web). Convertido de `.blend` com `bpy` (Blender 5.3): texturas reduzidas a 1024 px, malhas pesadas soldadas (1,79 M → ~0,39 M triângulos), vidro e telhado reconfigurados. É um casco externo (sem interiores mobiliados). Uso apenas como referência; **não é projeto da MOSARQ**.
+Regerar: abrir o .blend com `bpy`, soldar vértices a 2 cm nas malhas > 15 mil faces, decimar o restante e exportar GLB (JPEG 75).

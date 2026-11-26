@@ -10,15 +10,6 @@
 
 .scene-badge{position:absolute;top:16px;left:16px;z-index:2;background:var(--earth);color:var(--paper);font-family:Archivo,sans-serif;font-size:.68rem;font-weight:900;letter-spacing:.12em;text-transform:uppercase;padding:7px 12px;pointer-events:none}
 
-/* Intro — logo reveal (apenas com JS, sem movimento reduzido, 1x por sessão) */
-.intro{display:none}
-.js-intro .intro{display:block;position:fixed;inset:0;z-index:1000;background:var(--moss,#6b705c)}
-.intro[hidden]{display:none!important}
-.intro .mq-stage{position:absolute;inset:0}
-.intro-skip{position:absolute;right:clamp(16px,3vw,40px);bottom:clamp(16px,3vw,40px);z-index:2;background:transparent;color:var(--paper,#f5f5f3);border:1px solid currentColor;padding:.7em 1.3em;font:600 .72rem/1 'Archivo',system-ui,sans-serif;letter-spacing:.18em;text-transform:uppercase;cursor:pointer;min-height:44px}
-.intro-skip:hover{background:var(--paper,#f5f5f3);color:var(--deep,#3f3230)}
-.intro-skip:focus-visible{outline:3px solid var(--paper,#f5f5f3);outline-offset:3px}
-
 /* ===== Tour 3D — dock estilo Apple (vidro, pílula deslizante) ===== */
 .tour-layout{display:block}
 .stage{position:relative}
@@ -58,3 +49,32 @@
 .gallery-note{color:#f5f5f3b8;margin:28px 0 0;font-size:.85rem}
 .acc-item{opacity:1}.js-ready .acc-item.pre{opacity:0;transform:translateY(40px)}
 @media(max-width:800px){.gallery{padding:65px 24px}.gallery-head{grid-template-columns:1fr;gap:24px}.accordion{flex-direction:column;height:auto}.acc-item{flex:none;height:84px;transition:height .7s cubic-bezier(.22,1,.36,1)}.acc-item:has([aria-expanded=true]){height:440px}.acc-title,.acc-trigger[aria-expanded=true] .acc-title{writing-mode:horizontal-tb;transform:none;bottom:auto;top:26px;left:56px;font-size:1.1rem}.acc-trigger[aria-expanded=true] .acc-title{font-size:1.7rem;top:auto;bottom:calc(22px + 5rem);left:22px}.acc-num{top:30px}.acc-trigger[aria-expanded=true] .acc-num{top:22px}}
+
+/* ===== Seção 2 — logo reveal sobre a textura da marca ===== */
+.reveal{display:block;position:relative;min-height:clamp(560px,100svh,900px);background:var(--moss);color:var(--paper);overflow:hidden}
+.reveal .mq-stage{position:absolute;inset:0}
+.mq-static{width:min(78vw,1100px);height:auto}
+.reveal-text{position:absolute;z-index:2;left:var(--space);right:var(--space);bottom:clamp(28px,7vh,80px);margin:0;max-width:34ch;font-size:clamp(1.15rem,2vw,1.7rem);text-shadow:0 1px 14px rgba(63,50,48,.35)}
+.js .reveal-text{opacity:0}
+@media(max-width:700px){.reveal{min-height:min(100svh,640px)}.reveal-text{max-width:none}}
+
+/* ===== Cards GSAP — texturas da marca ===== */
+.horizontal{position:relative;background:var(--earth)}
+.horizontal-track{display:flex;width:300%;min-height:calc(100svh - 100px)}
+.panel{position:relative;isolation:isolate;overflow:hidden;width:33.333333%;min-width:0;min-height:calc(100svh - 100px);padding:var(--space);display:flex;align-items:center;justify-content:flex-start}
+.panel:nth-child(n){background:none}
+.panel .tex{position:absolute;inset:-6% -12%;z-index:-2;background-size:min(70vw,760px);background-repeat:repeat;will-change:transform}
+.p-argila{background-color:var(--clay)!important}.p-argila .tex{background-image:url('./azulejo-argila.svg')}
+.p-terra{background-color:var(--earth)!important}.p-terra .tex{background-image:url('./azulejo-terra.svg')}
+.p-musgo{background-color:var(--moss)!important}.p-musgo .tex{background-image:url('./azulejo.svg')}
+.panel:before{content:"";position:absolute;inset:0;z-index:-1;background:linear-gradient(100deg,rgba(63,50,48,.55),rgba(63,50,48,0) 62%)}
+.panel .num{position:absolute;right:calc(var(--space) * .6);bottom:-.14em;z-index:-1;font-family:Archivo,sans-serif;font-weight:900;font-size:clamp(9rem,28vw,26rem);line-height:1;color:var(--paper);opacity:.14;letter-spacing:-.04em;will-change:transform}
+.glass{position:relative;max-width:min(560px,100%);padding:clamp(26px,3.4vw,52px);background:rgba(245,245,243,.14);-webkit-backdrop-filter:saturate(160%) blur(20px);backdrop-filter:saturate(160%) blur(20px);border:1px solid rgba(245,245,243,.35);border-radius:26px;box-shadow:0 24px 60px rgba(43,28,24,.28),inset 0 1px 0 rgba(255,255,255,.25);color:var(--paper)}
+.glass .kicker{display:inline-block;margin-bottom:18px;padding:7px 14px;border:1px solid rgba(245,245,243,.55);border-radius:999px;font-family:Archivo,sans-serif;font-weight:300;font-size:.7rem;letter-spacing:.2em;text-transform:uppercase}
+.glass h2{font-size:clamp(1.9rem,3.6vw,3.6rem);max-width:16ch}
+.glass p{font-size:clamp(1.1rem,1.5vw,1.4rem);margin:1.1em 0 0}
+.glass .cta{margin-top:26px;border-radius:999px;padding:18px 30px}
+.proc-progress{position:absolute;left:var(--space);right:var(--space);bottom:28px;height:2px;background:rgba(245,245,243,.28);border-radius:2px;z-index:3}
+.proc-progress span{display:block;height:100%;width:100%;background:var(--paper);transform-origin:left;transform:scaleX(.333);border-radius:2px}
+@media(max-width:700px){.horizontal-track{display:block;width:100%;min-height:0}.panel{width:100%;min-height:80svh;padding:60px 22px}.panel .tex{background-size:140vw}.proc-progress{display:none}.panel .num{font-size:34vw}}
+@media(prefers-reduced-motion:reduce){.horizontal-track{display:block;width:100%;min-height:0}.panel{width:100%;min-height:70svh}.proc-progress{display:none}}

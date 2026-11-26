@@ -79,18 +79,25 @@ function setup(host,hero){
 }
 
 /* ---------- Tour 3D com modelo GLB (estudo conceitual) ---------- */
-const GLB_URL=new URL('./models/mosarq-casa.glb',import.meta.url).href;
-const CAM_BY_ROOM={living:'cam_sala',kitchen:'cam_cozinha_jantar',bedroom:'cam_suite',bath:'cam_banheiro',garden:'cam_jardim'};
+const GLB_URL=new URL('./models/mosarq-casa-real.glb',import.meta.url).href;
+const AREAS={
+ living:{label:'Fachada',desc:'Volumes, reboco texturizado e esquadrias em grafite.',p:[8,5,18],t:[8,5,0],fov:42,icon:'<path d="M4 21V8l8-5 8 5v13M9 21v-6h6v6M8 11h2M14 11h2"/>'},
+ kitchen:{label:'Volumetria',desc:'Composição de planos, balanços e proteção solar.',p:[22,10,10],t:[8,5,-4],fov:42,icon:'<path d="M12 3l8 4.5v9L12 21l-8-4.5v-9zM12 12l8-4.5M12 12v9M12 12L4 7.5"/>'},
+ bedroom:{label:'Esquadrias',desc:'Vidro, caixilhos e o contraste entre os materiais.',p:[3,3,10],t:[10,6,0],fov:42,icon:'<path d="M5 4h14v16H5zM12 4v16M5 12h14"/>'},
+ bath:{label:'Pátio',desc:'Terraços e pergolado de madeira voltados ao pátio interno.',p:[28,16,-40],t:[8,3,-18],fov:42,icon:'<path d="M12 21v-8M12 13c0-4-3-6-7-6 0 4 3 6 7 6zM12 15c0-3 2-5 6-5 0 3-2 5-6 5z"/>'},
+ garden:{label:'Vista aérea',desc:'A casa no terreno: coberturas, pátio e áreas externas.',p:[40,22,22],t:[8,4,-15],fov:40,icon:'<path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12zM12 9.5a2.5 2.5 0 100 5 2.5 2.5 0 000-5z"/>'}
+};
 async function tourGLB(host){
  const base='https://esm.sh/three@0.181.2/examples/jsm/';
  const [{GLTFLoader},{RoomEnvironment}]=await Promise.all([import(base+'loaders/GLTFLoader.js'),import(base+'environments/RoomEnvironment.js')]);
  const renderer=new THREE.WebGLRenderer({antialias:true,powerPreference:'low-power'});
  renderer.setPixelRatio(Math.min(devicePixelRatio,1.5));renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.NeutralToneMapping;renderer.toneMappingExposure=.82;renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;
- const scene=new THREE.Scene();scene.background=new THREE.Color('#dfe4de');
+ const scene=new THREE.Scene();scene.background=new THREE.Color('#dfe4de');scene.fog=new THREE.Fog('#dfe4de',55,120);
  const pmrem=new THREE.PMREMGenerator(renderer);const envTex=pmrem.fromScene(new RoomEnvironment(),.04).texture;scene.environment=envTex;scene.environmentIntensity=.6;
  scene.add(new THREE.HemisphereLight(0xfff8ea,0x8a8474,.7));
- const sun=new THREE.DirectionalLight(0xffe9cd,1.9);sun.position.set(-8,14,10);sun.castShadow=true;sun.shadow.mapSize.set(2048,2048);sun.shadow.bias=-.0004;sun.shadow.normalBias=.03;
- Object.assign(sun.shadow.camera,{left:-16,right:16,top:16,bottom:-16,near:1,far:50});scene.add(sun);
+ const sun=new THREE.DirectionalLight(0xffe9cd,1.9);sun.position.set(-6,30,30);sun.target.position.set(8,3,-14);scene.add(sun.target);sun.castShadow=true;sun.shadow.mapSize.set(2048,2048);sun.shadow.bias=-.0004;sun.shadow.normalBias=.03;
+ Object.assign(sun.shadow.camera,{left:-26,right:26,top:26,bottom:-26,near:1,far:90});scene.add(sun);
+ const ground=new THREE.Mesh(new THREE.PlaneGeometry(260,260),new THREE.MeshStandardMaterial({color:'#d3d8cc',roughness:1}));ground.rotation.x=-Math.PI/2;ground.position.y=-.09;ground.receiveShadow=true;scene.add(ground);
  const gltf=await new GLTFLoader().loadAsync(GLB_URL);
  scene.add(gltf.scene);
  const cams={};gltf.scene.traverse(o=>{
@@ -99,13 +106,13 @@ async function tourGLB(host){
  });
  gltf.scene.updateMatrixWorld(true);
  const camera=new THREE.PerspectiveCamera(60,1,.05,200);
- const pose=name=>{const c=cams[name];const p=new THREE.Vector3(),q=new THREE.Quaternion();c.getWorldPosition(p);c.getWorldQuaternion(q);return {p,q,fov:c.fov}};
- let from=pose('cam_sala'),to=from,started=0,anim=false,visible=false,frame=0,yaw=0,pitch=0,dragging=false,lastX=0,lastY=0;
+ const pose=key=>{const a=AREAS[key];const p=new THREE.Vector3(...a.p);const m=new THREE.Matrix4().lookAt(p,new THREE.Vector3(...a.t),new THREE.Vector3(0,1,0));return {p,q:new THREE.Quaternion().setFromRotationMatrix(m),fov:a.fov}};
+ let from=pose('living'),to=from,started=0,anim=false,visible=false,frame=0,yaw=0,pitch=0,dragging=false,lastX=0,lastY=0;
  camera.position.copy(from.p);camera.quaternion.copy(from.q);camera.fov=from.fov;
  const cur={p:from.p.clone(),q:from.q.clone(),fov:from.fov};
  const look=new THREE.Quaternion(),eY=new THREE.Euler(0,0,0,'YXZ');
  function select(room){
-  const name=CAM_BY_ROOM[room];if(!name||!cams[name])return;
+  const name=AREAS[room]?room:null;if(!name)return;const A=AREAS[room];const tt=document.getElementById('roomTitle'),dd=document.getElementById('roomDesc');if(tt)tt.textContent=A.label;if(dd)dd.textContent=A.desc;
   from={p:cur.p.clone(),q:cur.q.clone(),fov:cur.fov};to=pose(name);yaw=0;pitch=0;
   started=performance.now();anim=!reduced.matches;if(!anim){cur.p.copy(to.p);cur.q.copy(to.q);cur.fov=to.fov}
   request()
@@ -126,12 +133,16 @@ async function tourGLB(host){
   if(anim||dragging)request()
  }
  const el=renderer.domElement;el.style.touchAction='pan-y';el.style.cursor='grab';
- el.setAttribute('role','img');el.setAttribute('aria-label','Residência em 3D, estudo conceitual. Use os botões para trocar de ambiente; arraste para olhar ao redor.');
+ el.setAttribute('role','img');el.setAttribute('aria-label','Modelo 3D de uma residência moderna, estudo conceitual. Use os botões para trocar de enquadramento; arraste para olhar ao redor.');
  el.addEventListener('pointerdown',e=>{dragging=true;lastX=e.clientX;lastY=e.clientY;el.setPointerCapture(e.pointerId);el.style.cursor='grabbing'});
  el.addEventListener('pointermove',e=>{if(!dragging)return;yaw=THREE.MathUtils.clamp(yaw+(e.clientX-lastX)*-.004,-.7,.7);pitch=THREE.MathUtils.clamp(pitch+(e.clientY-lastY)*-.003,-.35,.35);lastX=e.clientX;lastY=e.clientY;request()});
  const end=()=>{dragging=false;el.style.cursor='grab'};el.addEventListener('pointerup',end);el.addEventListener('pointercancel',end);
  document.querySelectorAll('[data-room]').forEach(b=>b.addEventListener('click',()=>select(b.dataset.room)));
  host.prepend(el);host.classList.add('ready');
+ /* relabel do menu para as áreas do modelo real */
+ document.querySelectorAll('.dock [data-room]').forEach(b=>{const A=AREAS[b.dataset.room];if(!A)return;const sp=b.querySelector('span'),sv=b.querySelector('svg');if(sp)sp.textContent=A.label;if(sv)sv.innerHTML=A.icon});
+ const rt=document.getElementById('roomTitle'),rd=document.getElementById('roomDesc');if(rt)rt.textContent=AREAS.living.label;if(rd)rd.textContent=AREAS.living.desc;
+ dispatchEvent(new Event('mq:dock'));
  const size=new ResizeObserver(request);size.observe(host);
  const io=new IntersectionObserver(([en])=>{visible=en.isIntersecting;if(visible)request();else{cancelAnimationFrame(frame);frame=0}});io.observe(host);
  const dispose=()=>{visible=false;cancelAnimationFrame(frame);size.disconnect();io.disconnect();scene.traverse(o=>{if(o.isMesh){o.geometry.dispose();(Array.isArray(o.material)?o.material:[o.material]).forEach(m=>{for(const k in m){if(m[k]&&m[k].isTexture)m[k].dispose()}m.dispose()})}});envTex.dispose();pmrem.dispose();renderer.dispose()};

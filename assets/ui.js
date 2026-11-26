@@ -19,7 +19,7 @@
       var i=btns.indexOf(document.activeElement);if(i<0)return;
       if(e.key==='ArrowRight'||e.key==='ArrowLeft'){e.preventDefault();var n=btns[(i+(e.key==='ArrowRight'?1:btns.length-1))%btns.length];n.focus();n.click()}
     });
-    addEventListener('resize',place);
+    addEventListener('resize',place);addEventListener('mq:dock',place);
     if(document.fonts&&document.fonts.ready)document.fonts.ready.then(place);
     place();requestAnimationFrame(place);
     dock.querySelector('.dock-pill').style.transition='none';
