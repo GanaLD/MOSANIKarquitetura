@@ -211,4 +211,4 @@
 .hero-media{background:var(--deep) linear-gradient(rgba(245,245,243,.05) 1px,transparent 1px) 0 0/48px 48px,var(--deep) linear-gradient(90deg,rgba(245,245,243,.05) 1px,transparent 1px) 0 0/48px 48px;background-color:var(--deep)}
 .hero-video:not([src]):not(:has(source)){display:none}
 .hero-pause[hidden],.hero-ref[hidden]{display:none}
-@media(max-width:700px){.hero-video{object-position:45% 50%}}
+@media(max-width:700px){.hero-video{object-position:50% 50%}}
