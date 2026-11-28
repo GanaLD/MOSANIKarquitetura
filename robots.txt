@@ -1,0 +1,4 @@
+# Prévia: o site ainda está com noindex até a aprovação. Liberar a indexação trocando a meta robots das páginas.
+User-agent: *
+Allow: /
+Sitemap: https://mosarq.shop/sitemap.xml

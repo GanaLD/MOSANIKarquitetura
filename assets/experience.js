@@ -79,30 +79,30 @@ function setup(host,hero){
 }
 
 /* ---------- Tour 3D com modelo GLB (estudo conceitual) ---------- */
-const GLB_URL=new URL('./models/mosarq-casa-real.glb',import.meta.url).href;
+const GLB_URL=new URL('./models/modern-house.glb',import.meta.url).href;
 const AREAS={
- living:{label:'Fachada',desc:'Volumes, reboco texturizado e esquadrias em grafite.',p:[8,5,18],t:[8,5,0],fov:42,icon:'<path d="M4 21V8l8-5 8 5v13M9 21v-6h6v6M8 11h2M14 11h2"/>'},
- kitchen:{label:'Volumetria',desc:'Composição de planos, balanços e proteção solar.',p:[22,10,10],t:[8,5,-4],fov:42,icon:'<path d="M12 3l8 4.5v9L12 21l-8-4.5v-9zM12 12l8-4.5M12 12v9M12 12L4 7.5"/>'},
- bedroom:{label:'Esquadrias',desc:'Vidro, caixilhos e o contraste entre os materiais.',p:[3,3,10],t:[10,6,0],fov:42,icon:'<path d="M5 4h14v16H5zM12 4v16M5 12h14"/>'},
- bath:{label:'Pátio',desc:'Terraços e pergolado de madeira voltados ao pátio interno.',p:[28,16,-40],t:[8,3,-18],fov:42,icon:'<path d="M12 21v-8M12 13c0-4-3-6-7-6 0 4 3 6 7 6zM12 15c0-3 2-5 6-5 0 3-2 5-6 5z"/>'},
- garden:{label:'Vista aérea',desc:'A casa no terreno: coberturas, pátio e áreas externas.',p:[40,22,22],t:[8,4,-15],fov:40,icon:'<path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12zM12 9.5a2.5 2.5 0 100 5 2.5 2.5 0 000-5z"/>'}
+ living:{label:'Fachada',desc:'Volumes em reboco grafite, telhado em chapa e varanda em balanço.',p:[12.84,1.6,25.18],t:[10.14,1.5,20.98],fov:40,icon:'<path d="M4 21V8l8-5 8 5v13M9 21v-6h6v6M8 11h2M14 11h2"/>'},
+ kitchen:{label:'Entrada',desc:'Acesso pela rua, garagem coberta e piso drenante.',p:[-19,1.4,-16.18],t:[-15.85,1.6,-12.33],fov:40,icon:'<path d="M3 21h18M6 21V9l6-5 6 5v12M10 21v-5h4v5"/>'},
+ bedroom:{label:'Varanda',desc:'Deck de madeira sob pergolado, aberto para o jardim.',p:[-.17,1.4,14.27],t:[-.17,1.3,9.27],fov:42,icon:'<path d="M3 8h18M5 8v13M19 8v13M3 21h18M8 8V5h8v3"/>'},
+ bath:{label:'Sala',desc:'Pé-direito generoso, escada vazada e luz natural.',p:[4.16,1.45,3.72],t:[-.64,1.25,2.37],fov:52,icon:'<path d="M5 11V8a2 2 0 012-2h10a2 2 0 012 2v3M3 13a2 2 0 014 0v2h10v-2a2 2 0 014 0v4H3zM6 17v2M18 17v2"/>'},
+ garden:{label:'Estar',desc:'Integração total com o deck por portas de correr.',p:[.35,1.4,2.19],t:[-4.15,.9,4.14],fov:56,icon:'<path d="M12 21v-8M12 13c0-4-3-6-7-6 0 4 3 6 7 6zM12 15c0-3 2-5 6-5 0 3-2 5-6 5z"/>'}
 };
 async function tourGLB(host){
  const base='https://esm.sh/three@0.181.2/examples/jsm/';
  const [{GLTFLoader},{RoomEnvironment}]=await Promise.all([import(base+'loaders/GLTFLoader.js'),import(base+'environments/RoomEnvironment.js')]);
  const renderer=new THREE.WebGLRenderer({antialias:true,powerPreference:'low-power'});
  renderer.setPixelRatio(Math.min(devicePixelRatio,1.5));renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.NeutralToneMapping;renderer.toneMappingExposure=.82;renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;
- const scene=new THREE.Scene();scene.background=new THREE.Color('#dfe4de');scene.fog=new THREE.Fog('#dfe4de',55,120);
+ const scene=new THREE.Scene();scene.background=new THREE.Color('#dfe4de');scene.fog=new THREE.Fog('#dfe4de',70,160);
  const pmrem=new THREE.PMREMGenerator(renderer);const envTex=pmrem.fromScene(new RoomEnvironment(),.04).texture;scene.environment=envTex;scene.environmentIntensity=.6;
  scene.add(new THREE.HemisphereLight(0xfff8ea,0x8a8474,.7));
- const sun=new THREE.DirectionalLight(0xffe9cd,1.9);sun.position.set(-6,30,30);sun.target.position.set(8,3,-14);scene.add(sun.target);sun.castShadow=true;sun.shadow.mapSize.set(2048,2048);sun.shadow.bias=-.0004;sun.shadow.normalBias=.03;
+ const sun=new THREE.DirectionalLight(0xffe9cd,1.9);sun.position.set(-14,34,30);sun.target.position.set(0,0,4);scene.add(sun.target);sun.castShadow=true;sun.shadow.mapSize.set(2048,2048);sun.shadow.bias=-.0004;sun.shadow.normalBias=.03;
  Object.assign(sun.shadow.camera,{left:-26,right:26,top:26,bottom:-26,near:1,far:90});scene.add(sun);
- const ground=new THREE.Mesh(new THREE.PlaneGeometry(260,260),new THREE.MeshStandardMaterial({color:'#d3d8cc',roughness:1}));ground.rotation.x=-Math.PI/2;ground.position.y=-.09;ground.receiveShadow=true;scene.add(ground);
+ const ground=new THREE.Mesh(new THREE.PlaneGeometry(260,260),new THREE.MeshStandardMaterial({color:'#d3d8cc',roughness:1}));ground.rotation.x=-Math.PI/2;ground.position.y=-.7;ground.receiveShadow=true;scene.add(ground);
  const gltf=await new GLTFLoader().loadAsync(GLB_URL);
  scene.add(gltf.scene);
  const cams={};gltf.scene.traverse(o=>{
   if(o.isCamera)cams[o.name]=o;
-  if(o.isMesh){const t=o.material&&o.material.transparent;o.castShadow=!t;o.receiveShadow=true;if(t)o.renderOrder=2}
+  if(o.isMesh){(Array.isArray(o.material)?o.material:[o.material]).forEach(m=>{if(m&&/glass/i.test(m.name)){m.transparent=true;m.opacity=/foggy/i.test(m.name)?.55:.18;m.transmission=0;m.roughness=.05;m.metalness=0;m.depthWrite=false;if(m.color)m.color.set(0xc9d6d4)}});const t=o.material&&o.material.transparent;o.castShadow=!t;o.receiveShadow=true;if(t)o.renderOrder=2}
  });
  gltf.scene.updateMatrixWorld(true);
  const camera=new THREE.PerspectiveCamera(60,1,.05,200);

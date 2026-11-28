@@ -1,4 +1,4 @@
-/* MOSARQ — Cards GSAP: scroll horizontal fixado (desktop), parallax da textura e barra de progresso */
+/* MOSARQ — Cards GSAP: scroll horizontal fixado (desktop), com encaixe por card, parallax da textura e barra de progresso */
 (function () {
   'use strict';
   addEventListener('load', function () {
@@ -10,25 +10,42 @@
       var track = document.getElementById('track');
       var panels = gsap.utils.toArray('.panel');
       var bar = document.querySelector('.proc-progress span');
-      var dist = function () { return innerWidth * (panels.length - 1); };
+      var steps = panels.length - 1;
+      var dist = function () { return innerWidth * steps; };
       var main = gsap.to(track, {
         x: function () { return -dist(); }, ease: 'none',
         scrollTrigger: {
           trigger: '.horizontal', start: 'top 100px', end: function () { return '+=' + dist(); },
-          pin: true, scrub: 0.8, invalidateOnRefresh: true,
-          onUpdate: function (self) { if (bar) gsap.set(bar, { scaleX: 1 / 3 + self.progress * (2 / 3) }); }
+          pin: true, scrub: 0.6, invalidateOnRefresh: true,
+          snap: { snapTo: 1 / steps, directional: false, inertia: false, duration: { min: 0.25, max: 0.6 }, delay: 0.08, ease: 'power2.inOut' },
+          onUpdate: function (self) { if (bar) gsap.set(bar, { scaleX: 1 / panels.length + self.progress * (steps / panels.length) }); }
         }
       });
-      panels.forEach(function (p) {
-        var tex = p.querySelector('.tex'), num = p.querySelector('.num'), glass = p.querySelector('.glass');
-        var st = { trigger: p, containerAnimation: main, start: 'left right', end: 'right left', scrub: true };
-        gsap.fromTo(tex, { xPercent: -9 }, { xPercent: 9, ease: 'none', scrollTrigger: st });
-        gsap.fromTo(num, { xPercent: 14 }, { xPercent: -14, ease: 'none', scrollTrigger: st });
-        gsap.fromTo(glass, { opacity: 0.2, y: 40, scale: 0.96 }, {
-          opacity: 1, y: 0, scale: 1, ease: 'power2.out',
-          scrollTrigger: { trigger: p, containerAnimation: main, start: 'left 85%', end: 'left 35%', scrub: true }
+      panels.forEach(function (p, i) {
+        var tex = p.querySelector('.tex'), glass = p.querySelector('.glass');
+        gsap.fromTo(tex, { xPercent: -9 }, { xPercent: 9, ease: 'none', scrollTrigger: { trigger: p, containerAnimation: main, start: 'left right', end: 'right left', scrub: true } });
+        if (i === 0) return;
+        gsap.fromTo(glass, { autoAlpha: 0.35 }, {
+          autoAlpha: 1, ease: 'none',
+          scrollTrigger: { trigger: p, containerAnimation: main, start: 'left 70%', end: 'left 20%', scrub: true }
         });
       });
     });
   });
+})();
+
+/* Alinhamento: todos os cards de vidro com a mesma altura (desktop) */
+(function () {
+  'use strict';
+  var mq = matchMedia('(min-width: 701px)');
+  function equal() {
+    var gs = [].slice.call(document.querySelectorAll('.horizontal .glass'));
+    gs.forEach(function (g) { g.style.minHeight = ''; });
+    if (!mq.matches) return;
+    var h = Math.max.apply(null, gs.map(function (g) { return g.offsetHeight; }));
+    gs.forEach(function (g) { g.style.minHeight = h + 'px'; });
+  }
+  addEventListener('load', equal);
+  addEventListener('resize', function () { clearTimeout(equal.t); equal.t = setTimeout(equal, 120); });
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(equal);
 })();

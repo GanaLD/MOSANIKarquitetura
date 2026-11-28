@@ -212,3 +212,23 @@
 .hero-video:not([src]):not(:has(source)){display:none}
 .hero-pause[hidden],.hero-ref[hidden]{display:none}
 @media(max-width:700px){.hero-video{object-position:50% 50%}}
+/* ===== v3 — cards GSAP alinhados (sem numeração) ===== */
+.panel .num{display:none}
+.horizontal .glass{width:min(640px,100%);max-width:none;min-height:min(560px,calc(100svh - 240px));display:flex;flex-direction:column;justify-content:center;align-items:flex-start}
+.horizontal .glass h2{max-width:17ch}
+.horizontal .glass p{max-width:38ch}
+@media(min-width:701px){.panel{flex-direction:column;justify-content:center;align-items:flex-start;padding:var(--space)}.hero-foot{padding-right:84px}}
+@media(max-width:700px){.horizontal .glass{width:100%;min-height:0}.panel{padding-bottom:96px}}
+/* ===== v3 — botão flutuante WhatsApp (verde WhatsApp + laranja da marca) ===== */
+:root{--wa:#25d366;--wa-deep:#128c4a}
+.wa-fab{position:fixed;right:clamp(16px,2.2vw,32px);bottom:clamp(16px,2.2vw,32px);z-index:25;display:flex;align-items:center;gap:0;text-decoration:none;color:#fff;-webkit-tap-highlight-color:transparent}
+.wa-icon{position:relative;display:grid;place-items:center;width:60px;height:60px;border-radius:50%;background:var(--wa);box-shadow:0 0 0 4px var(--clay),0 14px 32px rgba(43,28,24,.32);transition:transform .25s cubic-bezier(.2,.8,.2,1),background .2s}
+.wa-icon:after{content:"";position:absolute;inset:-4px;border-radius:50%;border:2px solid var(--clay);opacity:0;animation:wa-ring 2.8s ease-out 1.5s infinite}
+.wa-label{order:-1;max-width:0;overflow:hidden;white-space:nowrap;margin-right:0;padding:0;border-radius:999px;background:var(--clay);font-family:Archivo,Arial,sans-serif;font-weight:300;font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;line-height:44px;height:44px;box-shadow:0 10px 26px rgba(43,28,24,.25);transition:max-width .35s cubic-bezier(.2,.8,.2,1),padding .35s,margin .35s}
+.wa-fab:hover .wa-label,.wa-fab:focus-visible .wa-label{max-width:240px;padding:0 20px;margin-right:12px}
+.wa-fab:hover .wa-icon{transform:scale(1.06);background:var(--wa-deep)}
+.wa-fab:focus-visible{outline:none}.wa-fab:focus-visible .wa-icon{outline:3px solid var(--ink);outline-offset:6px}
+@keyframes wa-ring{0%{transform:scale(1);opacity:.7}80%,100%{transform:scale(1.45);opacity:0}}
+@media(max-width:700px){.wa-icon{width:56px;height:56px}.hero-foot{padding-right:72px}}
+@media(prefers-reduced-motion:reduce){.wa-icon:after{animation:none}.wa-label,.wa-icon{transition:none}}
+@media(forced-colors:active){.wa-icon{border:2px solid ButtonText}}
