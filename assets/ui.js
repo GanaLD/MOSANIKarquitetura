@@ -93,6 +93,12 @@
     b.addEventListener('click',function(){if(v.paused){held=false;if(v.ended)v.currentTime=0;v.play().catch(function(){});set(false)}else{held=true;v.pause();set(true)}});
     v.addEventListener('playing',function(){b.hidden=false});
     v.addEventListener('ended',function(){set(true)});
+    /* Ao voltar ao topo, o vídeo do hero recomeça (a menos que a pessoa tenha pausado) */
+    var away=false;
+    if('IntersectionObserver' in window)new IntersectionObserver(function(en){var e=en[0];
+      if(!e.isIntersecting){away=true;if(!v.paused)v.pause();return}
+      if(away&&e.intersectionRatio>.5&&!held){away=false;try{v.currentTime=0}catch(err){}set(false);go()}
+    },{threshold:[0,.5]}).observe(v);
   }
   document.addEventListener('click',function(e){
     var a=e.target.closest('a[href^="#"]');if(!a)return;
