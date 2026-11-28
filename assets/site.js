@@ -77,3 +77,5 @@
 
   [].forEach.call(document.querySelectorAll('.year'), function (y) { y.textContent = new Date().getFullYear(); });
 })();
+/* a11y: elemento focado pelo teclado sempre visível, mesmo antes da animação de entrada */
+document.addEventListener('focusin',function(e){var x=e.target;while(x&&x!==document.body){if(getComputedStyle(x).opacity==='0'){x.style.opacity='1';x.style.transform='none'}x=x.parentElement}});

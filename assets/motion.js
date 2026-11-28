@@ -102,7 +102,7 @@
     [].forEach.call(document.querySelectorAll('.split-copy > p, .split-copy dl, .split-copy .btn-row, .lr-copy p, .refs-head p, .cp-copy p, .cp-copy .btn-row, .about-text p, .about-big, .faq details, .ct-card p, .ct-card .btn-row, .credits, .pn'), function (el) {
       if (el.closest('[data-reveal]')) return;
       var top = el.getBoundingClientRect().top < innerHeight;
-      var t = g.from(el, { y: 40, autoAlpha: 0, duration: 1, ease: 'power3.out', paused: true });
+      var t = g.from(el, { y: 40, opacity: 0, duration: 1, ease: 'power3.out', paused: true });
       if (top) whenIntro(function () { setTimeout(function () { t.play(); }, 350); });
       else ST.create({ trigger: el, start: 'top 90%', once: true, onEnter: function () { t.play(); } });
     });

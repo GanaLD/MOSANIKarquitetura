@@ -319,3 +319,9 @@ main>section:not(.hero-v):not(.lr-hero):not(.ct-hero){position:relative;z-index:
 .tour-note a,.link-btn{color:inherit;text-decoration:underline;text-decoration-color:var(--clay);text-underline-offset:3px;text-decoration-thickness:2px}
 .link-btn{background:none;border:0;padding:0;font:inherit;cursor:pointer}
 .link-btn:hover,.tour-note a:hover{color:var(--clay)}
+/* a11y v6.1 — contraste AA e alvos de toque */
+.svc-sec.tex-perf .kl-light,.steps-sec .kl-light{color:#fff!important}
+.tex-perf .refs-head p,.steps-sec .refs-head p,.svc-card p,.step-card p{color:#fff}
+.cta-process small,.cta-process small *,.foot-slim small,.foot-slim small *{color:#fff!important}
+.hero-pause{min-width:44px;min-height:44px}
+.cta-process .kl-light{color:#fff!important}
