@@ -91,7 +91,7 @@
     });
 
     /* 4. Imagens que se abrem ao entrar na tela */
-    [].forEach.call(document.querySelectorAll('.split-media, .gal-grid figure, .ref-media, .tour-cta, .cta-process .cp-steps'), function (el) {
+    [].forEach.call(document.querySelectorAll('.split-media, .gal-grid figure, .ref-media, .cta-process .cp-steps'), function (el) {
       var img = el.querySelector('img');
       g.fromTo(el, { clipPath: 'inset(9% 7% 9% 7% round 28px)' }, { clipPath: 'inset(0% 0% 0% 0% round 22px)', ease: 'none',
         scrollTrigger: { trigger: el, start: 'top 95%', end: 'top 45%', scrub: 0.6 } });

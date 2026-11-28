@@ -310,3 +310,12 @@ html:not(.js) .intro{display:none}
 main>section:not(.hero-v):not(.lr-hero):not(.ct-hero){position:relative;z-index:3}
 .split{background:var(--paper)}
 .cp-steps.glass{background:linear-gradient(135deg,rgba(255,255,255,.16),rgba(255,255,255,.04) 60%,rgba(255,255,255,.1))}
+/* v6 */
+.page-contato .tex-perf:before,.page-contato .faq-sec:before,.page-contato .cta-process:before{display:none}
+.insp-more{display:inline-flex;align-self:flex-start;margin-top:10px;padding:9px 16px;border:1px solid rgba(243,198,174,.55);border-radius:999px;color:#f3c6ae!important;font-weight:300;transition:background .25s,color .25s,border-color .25s,box-shadow .25s}
+.insp-card:hover .insp-more,.insp-card:focus-visible .insp-more{background:var(--clay);border-color:var(--clay);color:var(--paper)!important;box-shadow:0 0 0 6px rgba(180,87,46,.25),0 10px 24px rgba(180,87,46,.35)}
+.tour-note{margin:22px 0 0;max-width:62ch;font-size:1.05rem;line-height:1.6}
+.tour-note strong{font-family:Archivo,Arial,sans-serif;font-weight:900;text-transform:uppercase;letter-spacing:.03em;color:var(--clay)}
+.tour-note a,.link-btn{color:inherit;text-decoration:underline;text-decoration-color:var(--clay);text-underline-offset:3px;text-decoration-thickness:2px}
+.link-btn{background:none;border:0;padding:0;font:inherit;cursor:pointer}
+.link-btn:hover,.tour-note a:hover{color:var(--clay)}
